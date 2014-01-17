@@ -1,0 +1,36 @@
+                        PARAMETERIZED-FUNCTION
+                        ======================
+
+                           By Robert Smith
+
+This package provides functions which can be parameterized, whose
+parameters are dispatched at compile time.
+
+Parameterized functions are defined by first declaring the "dispatch
+function". For example, if we wanted a general multiply function that
+gets dispatched at compile time, we might declare the following:
+
+  (define-dispatch-function mult (xtype ytype) (x y))
+
+Next, we can define several parameterized functions.
+
+  (define-parameterized-function mult (:integer :integer) (x y)
+    (* x y))
+
+  (define-parameterized-function mult (:integer :string) (x y)
+    (with-output-to-string (s)
+      (loop :repeat x
+            :do (write-string y s))))
+
+  (define-parameterized-function mult (:string :integer) (y x)
+    (with-output-to-string (s)
+      (loop :repeat x
+            :do (write-string y s))))
+
+  (define-parameterized-function mult (:string :string) (x y)
+    (concatenate 'string x y)))
+
+If we call MULT with a constant (quoted) list as the first argument,
+then it will be expanded, at compile time, to one of the above
+definitions. If the first argument is not constant, then dispatch will
+occur at runtime.
