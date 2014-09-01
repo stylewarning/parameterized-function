@@ -5,9 +5,14 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun constant-quoted-list-p (l &optional env)
+    (declare (ignoreable env))
     (and (listp l)
          (typep l '(cons (member quote)))
-         (every (lambda (x) (constantp x env)) (cadr l))))
+         ;; This will check each symbol for constantness which isn't
+         ;; what we want.
+         ;;
+         ;(every (lambda (x) (constantp x env)) (cadr l))
+         ))
   
   (defun dispatch-table-name (name)
     (intern (format nil "%~A-DISPATCH-TABLE" (symbol-name name))))
@@ -24,7 +29,8 @@
 
 (defmacro define-dispatch-function (name (&rest parameters) (&rest args))
   (declare (ignore parameters))
-  (let ((table-name (dispatch-table-name name)))
+  (let ((table-name (dispatch-table-name name))
+        (params (gensym "PARAMS-")))
     `(progn
        (defvar ,table-name (make-hash-table :test 'equal))
        
@@ -44,15 +50,19 @@
 
        ;; TODO: Get a proper lambda list here so it can be
        ;; introspected. Requires some extra processing.
-       (defun ,name (params &rest args)
-         (let ((dispatch-function (gethash params ,table-name)))
+       (defun ,name (,params ,@args)
+         (let ((dispatch-function (gethash ,params ,table-name)))
            (unless dispatch-function
-             (error "Parameters ~S are unknown to the dispatch function ~S" params ',name))
+             (error "Parameters ~S are unknown to the dispatch function ~S" ,params ',name))
            (warn "Dynamic dispatch occuring in ~S" ',name)
-           (apply dispatch-function args))))))
+           ,(intf:calling-form 'dispatch-function (cons params args)))))))
 
 (defmacro define-parameterized-function (name (&rest parameters) (&rest args) &body body)
-  ;; TODO: Check PARAMETERS type
+  "Define a parameterized function named NAME whose parameter variables are PARAMETERS, whose lambda list is ARGS, and body is BODY."
+  (assert (every #'symbolp parameters)
+          (parameters)
+          "Every parameter variable must be a symbol. Given ~S."
+          parameters)
   (let ((dispatch-table    (dispatch-table-name name))
         (dispatch-function (generate-name-from-parameters name parameters)))
     `(progn
