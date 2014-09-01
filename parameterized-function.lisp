@@ -53,7 +53,7 @@
            (unless dispatch-function
              (error "Parameters ~S are unknown to the dispatch function ~S" ,params ',name))
            (warn "Dynamic dispatch occuring in ~S" ',name)
-           ,(intf:calling-form 'dispatch-function (cons params args)))))))
+           ,(intf:calling-form 'dispatch-function args))))))
 
 (defmacro define-parameterized-function (name (&rest parameters) (&rest args) &body body)
   "Define a parameterized function named NAME whose parameter variables are PARAMETERS, whose lambda list is ARGS, and body is BODY."
