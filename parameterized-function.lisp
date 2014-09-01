@@ -5,7 +5,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun constant-quoted-list-p (l &optional env)
-    (declare (ignoreable env))
+    (declare (ignorable env))
     (and (listp l)
          (typep l '(cons (member quote)))
          ;; This will check each symbol for constantness which isn't
