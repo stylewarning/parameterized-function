@@ -48,8 +48,6 @@
                      form)
                    (undispatch-form form dispatch-function)))))
 
-       ;; TODO: Get a proper lambda list here so it can be
-       ;; introspected. Requires some extra processing.
        (defun ,name (,params ,@args)
          (let ((dispatch-function (gethash ,params ,table-name)))
            (unless dispatch-function
