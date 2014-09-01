@@ -27,7 +27,7 @@
     (cons new-function-name (cddr form))))
 
 
-(defmacro define-dispatch-function (name (&rest parameters) (&rest args))
+(defmacro define-dispatch-function (name (&rest parameters) (&rest args) &key documentation)
   (declare (ignore parameters))
   (let ((table-name (dispatch-table-name name))
         (params (gensym "PARAMS-")))
@@ -49,6 +49,7 @@
                    (undispatch-form form dispatch-function)))))
 
        (defun ,name (,params ,@args)
+         ,@(and documentation (list documentation))
          (let ((dispatch-function (gethash ,params ,table-name)))
            (unless dispatch-function
              (error "Parameters ~S are unknown to the dispatch function ~S" ,params ',name))
