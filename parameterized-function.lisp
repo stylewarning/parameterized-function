@@ -38,7 +38,7 @@
          (defparameter ,table-name (make-hash-table :test 'equal)))
        
        (define-compiler-macro ,name (&whole form params ,@args &environment env)
-         (declare (ignore ,@args))
+         (declare (ignore ,@(set-difference args lambda-list-keywords)))
          (if (not (constant-quoted-list-p params env))
              (progn
                (warn "Non-constant parameters ~S in ~S" params form)
