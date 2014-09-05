@@ -3,6 +3,12 @@
 
 (defpackage #:parameterized-function
   (:use #:cl)
-  (:export #:define-dispatch-function
-           #:define-parameterized-function))
+  (:export #:*warn-about-dynamic-dispatch*
+                                        ; VARIABLE
+           #:*warn-about-non-constant-parameters*
+                                        ; VARIABLE
+           #:define-dispatch-function   ; MACRO
+           #:define-parameterized-function
+                                        ; MACRO
+           ))
 

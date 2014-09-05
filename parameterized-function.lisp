@@ -4,6 +4,12 @@
 
 (in-package #:parameterized-function)
 
+(defvar *warn-about-dynamic-dispatch* nil
+  "Enables run-time warnings when dynamic dispatch occurs.")
+
+(defvar *warn-about-non-constant-parameters* nil
+  "Enables compile-time warnings when dynamic dispatch will occur because of non-constant parameters.")
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun constant-quoted-list-p (l &optional env)
     (declare (ignorable env))
@@ -41,7 +47,8 @@
          (declare (ignore ,@(set-difference args lambda-list-keywords)))
          (if (not (constant-quoted-list-p params env))
              (progn
-               (warn "Non-constant parameters ~S in ~S" params form)
+               (when *warn-about-non-constant-parameters*
+                 (warn "Non-constant parameters ~S in ~S" params form))
                form)
              (let* ((params (cadr params))    ; remove the QUOTE
                     (dispatch-function (gethash params ,table-name)))
@@ -56,7 +63,8 @@
          (let ((dispatch-function (gethash ,params ,table-name)))
            (unless dispatch-function
              (error "Parameters ~S are unknown to the dispatch function ~S" ,params ',name))
-           (warn "Dynamic dispatch occuring in ~S" ',name)
+           (when *warn-about-dynamic-dispatch*
+             (warn "Dynamic dispatch occuring in ~S" ',name))
            ,(intf:calling-form 'dispatch-function args))))))
 
 (defmacro define-parameterized-function (name (&rest parameters) (&rest args) &body body)
